@@ -2,7 +2,7 @@
 
 int main() {
     // Execute methods
-    Render::ray();
-    Render::texture();
+    Render::intersection();
+    Render::barycentric();
     return 0;
 }

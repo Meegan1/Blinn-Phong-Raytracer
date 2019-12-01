@@ -14,7 +14,7 @@ struct Ray {
 
     Ray(Vector origin, Vector direction) : origin(origin), direction(direction) {}
 
-    bool intersects(Triangle triangle) {
+    bool intersects(Triangle &triangle, float &alpha, float &beta, float &gamma) {
         Vector p = triangle.A.position;
         Vector q = triangle.B.position;
         Vector r = triangle.C.position;
@@ -39,19 +39,20 @@ struct Ray {
         Vector qs = q - p;
 
         Vector psp(ps.dot(u), ps.dot(w), ps.dot(n));
-        Vector rsp(rs.dot(u), rs.dot(w), rs.dot(n));
         Vector qsp(qs.dot(u), qs.dot(w), qs.dot(n));
+        Vector rsp(rs.dot(u), rs.dot(w), rs.dot(n));
 
         Triangle triangle1(Vertex(psp, RGB(0, 0, 0), UV(0, 0)),
-                           Vertex(rsp, RGB(0, 0, 0), UV(0, 0)),
-                           Vertex(qsp, RGB(0, 0, 0), UV(0, 0)));
+                           Vertex(qsp, RGB(0, 0, 0), UV(0, 0)),
+                           Vertex(rsp, RGB(0, 0, 0), UV(0, 0)));
 
-        float a, b, c;
-        triangle1.get_barycentric(sp, a, b, c);
+        triangle1.get_barycentric(sp, alpha, beta, gamma);
 
-        if(a < 0 || a > 1 || b < 0 || b > 1 || c < 0 || c > 1)
-            return false;
+        return !(alpha < 0 || beta < 0 || gamma < 0 );
+    }
 
-        return true;
+    bool intersects(Triangle &triangle) {
+        float alpha, beta, gamma;
+        intersects(triangle, alpha, beta, gamma);
     }
 };

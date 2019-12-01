@@ -9,22 +9,12 @@
 
 class Render {
 public:
+    static void intersection();
+
+    static void barycentric();
+
     // Clamp value between 0-255
     static int clamp(int value);
-
-    static RGB BilinearLookup(Texture& tex, float s, float t);
-
-    static void abg();
-
-    static void half_plane();
-
-    static void triangle();
-
-    static void rgb();
-
-    static void texture();
-
-    static void ray();
 };
 
 
