@@ -14,7 +14,7 @@ struct Ray {
 
     Ray(Vector origin, Vector direction) : origin(origin), direction(direction) {}
 
-    bool intersects(Triangle &triangle, float &alpha, float &beta, float &gamma) {
+    bool intersects(Triangle &triangle, float &depth, float &alpha, float &beta, float &gamma) {
         Vector p = triangle.A.position;
         Vector q = triangle.B.position;
         Vector r = triangle.C.position;
@@ -30,6 +30,7 @@ struct Ray {
         float nom = -(origin - p).dot(n);
         float denom = direction.dot(n);
         Vector point = origin + direction*(nom / denom);
+        depth = point.magnitude()/128;
 
         Vector s = point - p;
         Vector sp(s.dot(u), s.dot(w), s.dot(n));
@@ -52,7 +53,7 @@ struct Ray {
     }
 
     bool intersects(Triangle &triangle) {
-        float alpha, beta, gamma;
-        intersects(triangle, alpha, beta, gamma);
+        float depth, alpha, beta, gamma;
+        return intersects(triangle, depth, alpha, beta, gamma);
     }
 };

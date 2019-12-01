@@ -43,17 +43,26 @@ void Render::barycentric() {
     for(int y = image.get_height()-1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
             Ray r = camera.pixelToRay(Pixel(x, y));
-            float alpha, beta, gamma;
-            if(r.intersects(triangle, alpha, beta, gamma)) {
-                Color color_r = clamp((alpha * triangle.A.color.r) + (beta * triangle.B.color.r)
+            float depth, alpha, beta, gamma;
+            if(r.intersects(triangle, depth, alpha, beta, gamma)) {
+                float r = clamp((alpha * triangle.A.color.r) + (beta * triangle.B.color.r)
                                       + (gamma * triangle.C.color.r));
-                Color color_g = clamp((alpha * triangle.A.color.g) + (beta * triangle.B.color.g)
+                float g = clamp((alpha * triangle.A.color.g) + (beta * triangle.B.color.g)
                                       + (gamma * triangle.C.color.g));
-                Color color_b = clamp((alpha * triangle.A.color.b) + beta * (triangle.B.color.b)
+                float b = clamp((alpha * triangle.A.color.b) + beta * (triangle.B.color.b)
                                       + (gamma * triangle.C.color.b));
-                image[x][y].r = color_r;
-                image[x][y].g = color_g;
-                image[x][y].b = color_b;
+
+                float A_DEPTH((triangle.A.position - camera.position).z);
+                float B_DEPTH((triangle.B.position - camera.position).z);
+                float C_DEPTH((triangle.C.position - camera.position).z);
+
+                float z = 1 / (alpha * A_DEPTH + beta * B_DEPTH + gamma * C_DEPTH);
+                r *= z;
+                g *= z;
+                b *= z;
+                image[x][y].r = (Color) r;
+                image[x][y].g = (Color) g;
+                image[x][y].b = (Color) b;
             }
         }
     }

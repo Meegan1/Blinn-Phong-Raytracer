@@ -24,6 +24,10 @@ struct RGB {
     RGB() = default;
 
     RGB(Color r, Color g, Color b) : r(r), g(g), b(b) {}
+
+    RGB operator / (float num) {
+        return {static_cast<Color>(r/num), static_cast<Color>(g/num), static_cast<Color>(b/num)};
+    }
 };
 
 /*
