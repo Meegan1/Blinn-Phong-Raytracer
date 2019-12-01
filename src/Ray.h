@@ -30,7 +30,7 @@ struct Ray {
         float nom = -(origin - p).dot(n);
         float denom = direction.dot(n);
         Vector point = origin + direction*(nom / denom);
-        depth = point.magnitude()/128;
+        depth = point.magnitude()/64;
 
         Vector s = point - p;
         Vector sp(s.dot(u), s.dot(w), s.dot(n));

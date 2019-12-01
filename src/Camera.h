@@ -27,7 +27,7 @@ struct Camera {
     }
 
     Ray pixelToRay(Pixel pixel) {
-        float nx = ((2*((pixel.x + 0.5f)/128)-1) * angle)*128;
+        float nx = (((2*(pixel.x + 0.5f)/128)-1) * angle)*128;
         float ny = (((2*(pixel.y + 0.5f)/128)-1) * angle)*128;
         return {Vector(position.x, position.y, position.z), Vector(nx, ny, 1).normalize()};
     }
