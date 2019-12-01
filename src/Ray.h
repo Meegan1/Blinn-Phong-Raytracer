@@ -18,95 +18,46 @@ struct Ray {
         Vector p = triangle.A.position;
         Vector q = triangle.B.position;
         Vector r = triangle.C.position;
-//        Vector u = q - p;
-//        Vector v = r - p;
-//
-//        Vector n = u.cross(v).normalize();
-//        Vector w = n.cross(u).normalize();
-//
-//        if(n.dot(direction) < 0.001f)
-//            return false;
-//
-//        float sp = (p - origin).dot(n);
-//        float dn = direction.dot(n);
-//        Vector o = origin + (direction * (sp / dn));
-//
-//        Vector calc = p + (u * (n.dot(p)) / n.dot(u));
-//
-//        if(o.z < 0)
-//            return false;
-//
-//        Vector s = p - direction;
-//
-//        Vector pcs(o.dot(u), o.dot(w), o.dot(n));
-//
-//        Vector pcp(p.dot(u), p.dot(w), p.dot(n));
-//        Vector pcq(q.dot(u), q.dot(w), q.dot(n));
-//        Vector pcr(r.dot(u), r.dot(w), r.dot(n));
 
-        Vector v0v1 = q - p;
-        Vector v0v2 = r - p;
-        Vector pvec = direction.cross(v0v2);
-        float det = v0v1.dot(pvec);
+        // triangle vectors
+        Vector u = (q - p).normalize();
+        Vector v = (r - p).normalize();
 
-        if (det < 0.0001f) return false;
-        // ray and triangle are parallel if det is close to 0
-        if (std::fabs(det) < 0.0001f) return false;
+        // plane vectors
+        Vector n = u.cross(v).normalize();
+        Vector w = n.cross(u).normalize();
 
-        float invDet = 1 / det;
+        float nom = -(origin - p).dot(n);
+        float denom = direction.dot(n);
+        Vector point = origin + direction*(nom / denom);
 
-        Vector tvec = origin - p;
-        float u = tvec.dot(pvec) * invDet;
-        if (u < 0 || u > 1) return false;
+        Vector s = point - p;
 
-        Vector qvec = tvec.cross(v0v1);
-        float v = direction.dot(qvec) * invDet;
-        if (v < 0 || u + v > 1) return false;
+        Vector sp(s.dot(u), s.dot(w), s.dot(n));
+        Vector lp(direction.dot(u), direction.dot(w), direction.dot(n));
+        float t = -(origin-p).dot(n)/direction.dot(n);
 
-        float t = v0v2.dot(qvec) * invDet;
+        Vector o = origin + direction*t;
 
-        return (t > 0.0001f) ? t : false;
+        Vector ps = p - p;
+        Vector rs = r - p;
+        Vector qs = q - p;
+
+        Vector psp(ps.dot(u), ps.dot(w), ps.dot(n));
+        Vector rsp(rs.dot(u), rs.dot(w), rs.dot(n));
+        Vector qsp(qs.dot(u), qs.dot(w), qs.dot(n));
 
 
-//        Triangle triangle1(Vertex(pcp, RGB(0, 0, 0), UV(0, 0)),
-//                Vertex(pcq, RGB(0, 0, 0), UV(0, 0)),
-//               Vertex(pcr, RGB(0, 0, 0), UV(0, 0)));
-//
-//        float a, b, c;
-//        triangle1.get_barycentric(pcs, a, b, c);
+        Triangle triangle1(Vertex(psp, RGB(0, 0, 0), UV(0, 0)),
+                Vertex(rsp, RGB(0, 0, 0), UV(0, 0)),
+               Vertex(qsp, RGB(0, 0, 0), UV(0, 0)));
 
-//        if(a < 0 || b < 0 || c < 0)
-//            return false;
+        float a, b, c;
+        triangle1.get_barycentric(sp, a, b, c);
 
-//        float ne = o.dot(n);
-//        float n2 = p.dot(n);
-//        float n3 = q.dot(n);
-//        float n4 = r.dot(n);
+        if(a < 0 || a > 1 || b < 0 || b > 1 || c < 0 || c > 1)
+            return false;
 
-
-
-
-//        Vector pp(p.dot(u), p.dot(w), p.dot(n));
-//        Vector pq(q.dot(u), q.dot(w), q.dot(n));
-//        Vector pr(r.dot(u), r.dot(w), r.dot(n));
-
-//
-//        Vector ss = ps.normalize();
-//        Vector pps = pp.normalize();
-//
-//        float x = n.dot(direction);
-//
-//        float d = n.dot(triangle.A.position);
-//
-//        float t = (n.dot(p - origin)) / n.dot(direction);
-//
-//        if(t < 0)
-//            return false;
-//
-//        Vector psss = origin + (direction * t);
-
-
-
-    return true;
+        return true;
     }
 };

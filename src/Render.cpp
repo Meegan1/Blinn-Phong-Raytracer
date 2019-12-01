@@ -17,8 +17,8 @@ void Render::ray() {
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 90);
 
-    for(int y = 64; y < image.get_height(); y++) {
-        for (int x = 100; x < image.get_width(); x++) {
+    for(int y = image.get_height()-1; y != -1; y--) {
+        for (int x = 0; x < image.get_width(); x++) {
             Ray r = camera.pixelToRay(Pixel(x, y));
             if(r.intersects(triangle)) {
                 image[x][y].r = 0;

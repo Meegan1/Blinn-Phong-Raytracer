@@ -30,6 +30,8 @@ struct Camera {
         float nx = (2 * ((pixel.x + 0.5f) / 128) - 1) * angle;
         float ny = (1 - (2 * (pixel.y + 0.5f) / 128)) * angle;
 
-        return {position, Vector(nx, ny, direction.z)};
+
+
+        return {Vector(position.x, position.y, position.z-1), Vector(nx, ny, 1).normalize()};
     }
 };
