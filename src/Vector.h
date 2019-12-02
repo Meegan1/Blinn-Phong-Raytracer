@@ -18,6 +18,8 @@ typedef float Position;
  */
 struct Vector {
     Position x, y, z;
+
+    Vector() : x(0), y(0), z(0) {}
     Vector(Position x, Position y, Position z) : x(x), y(y), z(z) {}
 
     Vector operator - (const Vector &other) {

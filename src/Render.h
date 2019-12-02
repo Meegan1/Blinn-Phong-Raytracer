@@ -18,6 +18,12 @@ public:
     static int clamp(int value);
 
     static void ambient();
+
+    static void specular();
+
+    static void diffuse();
+
+    static void blinn_phong();
 };
 
 

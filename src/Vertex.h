@@ -15,7 +15,7 @@
 /*
  * Typedefs
  */
-typedef unsigned char Color;
+typedef int Color;
 typedef float Position;
 
 /*
@@ -28,9 +28,12 @@ struct RGB {
 
     RGB(Color r, Color g, Color b) : r(r), g(g), b(b) {}
 
-    RGB operator / (float num) {
-        return {static_cast<Color>(r/num), static_cast<Color>(g/num), static_cast<Color>(b/num)};
-    }
+    RGB operator * (float num) { return {static_cast<Color>(r*num), static_cast<Color>(g*num), static_cast<Color>(b*num)}; }
+    RGB operator / (float num) { return {static_cast<Color>(r/num), static_cast<Color>(g/num), static_cast<Color>(b/num)}; }
+    RGB operator + (float num) { return {static_cast<Color>(r+num), static_cast<Color>(g+num), static_cast<Color>(b+num)}; }
+    RGB operator + (const RGB &color) { return {static_cast<Color>(r+color.r), static_cast<Color>(g+color.g), static_cast<Color>(b+color.b)}; }
+    RGB operator - (float num) { return {static_cast<Color>(r-num), static_cast<Color>(g-num), static_cast<Color>(b-num)}; }
+    RGB operator - (const RGB &color) { return {static_cast<Color>(r-color.r), static_cast<Color>(g-color.g), static_cast<Color>(b-color.b)}; }
 };
 
 /*

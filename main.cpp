@@ -5,5 +5,8 @@ int main() {
     Render::intersection();
     Render::barycentric();
     Render::ambient();
+    Render::specular();
+    Render::diffuse();
+    Render::blinn_phong();
     return 0;
 }
