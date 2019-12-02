@@ -2,12 +2,15 @@
 // Created by Jake Meegan on 16/11/2019.
 //
 
-#include "Vector.h"
+
 
 #ifndef ASSIGNMENT_3_VERTEX_H
 #define ASSIGNMENT_3_VERTEX_H
-
 #endif //ASSIGNMENT_3_VERTEX_H
+
+#ifndef ASSIGNMENT_3_VECTOR_H
+#include "Vector.h"
+#endif
 
 /*
  * Typedefs

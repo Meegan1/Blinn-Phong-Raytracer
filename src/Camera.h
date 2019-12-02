@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include "Ray.h"
+#include "Matrix4x4.h"
 
 #ifndef ASSIGNMENT_3_CAMERA_H
 #define ASSIGNMENT_3_CAMERA_H
@@ -17,18 +18,32 @@ struct Pixel {
 
 struct Camera {
     Vector position;
-    Vector direction;
+    Vector forward;
     Vector up;
-    float fov;
-    float angle;
+    Vector right = Vector(0, 0, 0);
 
-    Camera(Vector position, Vector direction, Vector up, float FOV) : position(position), direction(direction), up(up), fov(FOV), angle(0) {
-        angle = tan(FOV * 0.5f * ((float)M_PI / 180));
+    float fov, angle;
+    float w, h;
+
+    Camera(Vector position, Vector direction, Vector up, float w, float h, float FOV) : position(position),
+                                                                                        forward(direction.normalize()),
+                                                                                        up(up.normalize()), w(w), h(h),
+                                                                                        fov(FOV) {
+        angle = tan(FOV * 0.5f * ((float) M_PI / 180));
+
+        right = forward.cross(up);
     }
 
     Ray pixelToRay(Pixel pixel) {
-        float nx = (((2*(pixel.x + 0.5f)/128)-1) * angle)*128;
-        float ny = (((2*(pixel.y + 0.5f)/128)-1) * angle)*128;
-        return {Vector(position.x, position.y, position.z), Vector(nx, ny, 1).normalize()};
+        Vector origin = position + Vector(0, 0, 0);
+
+        // get perspective either side of camera
+        float nx = (((2*(pixel.x + 0.5f)/w)-1) * angle)*w;
+        float ny = (((2*(pixel.y + 0.5f)/h)-1) * angle)*h;
+
+        // get direction from camera to world
+        Vector dir = forward + (right * (nx)) + (up * (ny));
+
+        return {origin, Vector(dir.x, dir.y, dir.z).normalize()};
     }
 };

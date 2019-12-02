@@ -34,6 +34,10 @@ struct Vector {
         return {x + other, y + other, z + other};
     }
 
+    Vector operator * (const Vector &other) {
+        return {x * other.x, y * other.y, z * other.z};
+    }
+
     Vector operator * (float other) {
         return {x * other, y * other, z * other};
     }

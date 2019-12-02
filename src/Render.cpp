@@ -7,6 +7,7 @@
 #include "Camera.h"
 
 
+
 void Render::intersection() {
     Image image(128);
     Triangle triangle(
@@ -15,7 +16,7 @@ void Render::intersection() {
             Vertex(Vector(25, 90, 1), RGB(0, 0, 255), UV(0.230169, 0.222781))
     ); // create triangle with attributes
 
-    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 90);
+    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
 
     for(int y = image.get_height()-1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -38,23 +39,27 @@ void Render::barycentric() {
             Vertex(Vector(25, 90, 1), RGB(0, 0, 255), UV(0.230169, 0.222781))
     ); // create triangle with attributes
 
-    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 90);
+    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
+
+    RGB A_COLOR = triangle.A.color/triangle.A.position.z;
+    RGB B_COLOR = triangle.B.color/triangle.B.position.z;
+    RGB C_COLOR = triangle.C.color/triangle.C.position.z;
+
+    float A_DEPTH(1/triangle.A.position.z);
+    float B_DEPTH(1/triangle.B.position.z);
+    float C_DEPTH(1/triangle.C.position.z);
 
     for(int y = image.get_height()-1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
             Ray r = camera.pixelToRay(Pixel(x, y));
-            float depth, alpha, beta, gamma;
-            if(r.intersects(triangle, depth, alpha, beta, gamma)) {
-                float r = clamp((alpha * triangle.A.color.r) + (beta * triangle.B.color.r)
-                                      + (gamma * triangle.C.color.r));
-                float g = clamp((alpha * triangle.A.color.g) + (beta * triangle.B.color.g)
-                                      + (gamma * triangle.C.color.g));
-                float b = clamp((alpha * triangle.A.color.b) + beta * (triangle.B.color.b)
-                                      + (gamma * triangle.C.color.b));
-
-                float A_DEPTH((triangle.A.position - camera.position).z);
-                float B_DEPTH((triangle.B.position - camera.position).z);
-                float C_DEPTH((triangle.C.position - camera.position).z);
+            float alpha, beta, gamma;
+            if(r.intersects(triangle, alpha, beta, gamma)) {
+                float r = clamp((alpha * A_COLOR.r) + (beta * B_COLOR.r)
+                                      + (gamma * C_COLOR.r));
+                float g = clamp((alpha * A_COLOR.g) + (beta * B_COLOR.g)
+                                      + (gamma * C_COLOR.g));
+                float b = clamp((alpha * A_COLOR.b) + beta * (B_COLOR.b)
+                                      + (gamma * C_COLOR.b));
 
                 float z = 1 / (alpha * A_DEPTH + beta * B_DEPTH + gamma * C_DEPTH);
                 r *= z;

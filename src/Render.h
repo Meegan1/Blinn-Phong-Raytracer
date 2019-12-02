@@ -7,6 +7,7 @@
 
 #include "Texture.h"
 
+
 class Render {
 public:
     static void intersection();
