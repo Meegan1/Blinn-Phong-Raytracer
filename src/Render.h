@@ -16,6 +16,8 @@ public:
 
     // Clamp value between 0-255
     static int clamp(int value);
+
+    static void ambient();
 };
 
 
