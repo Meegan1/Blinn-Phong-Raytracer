@@ -11,9 +11,9 @@
 void Render::intersection() {
     Image image(128);
     Triangle triangle(
-            Vertex(Vector(61, 10, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-            Vertex(Vector(100, 100, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-            Vertex(Vector(25, 90, 1), RGB(0, 0, 255), UV(0.230169, 0.222781))
+            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
+            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
+            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781))
     ); // create triangle with attributes
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
@@ -34,9 +34,9 @@ void Render::intersection() {
 void Render::barycentric() {
     Image image(128);
     Triangle triangle(
-            Vertex(Vector(61, 10, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-            Vertex(Vector(100, 100, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-            Vertex(Vector(25, 90, 1), RGB(0, 0, 255), UV(0.230169, 0.222781))
+            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
+            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
+            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781))
     ); // create triangle with attributes
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
@@ -61,9 +61,9 @@ void Render::barycentric() {
 void Render::ambient() {
     Image image(128);
     Triangle triangle(
-            Vertex(Vector(61, 10, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-            Vertex(Vector(100, 100, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-            Vertex(Vector(25, 90, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
+            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
+            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
+            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
             1,
             0,
             0,
@@ -96,9 +96,9 @@ void Render::ambient() {
 void Render::specular() {
     Image image(128);
     Triangle triangle(
-            Vertex(Vector(61, 10, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-            Vertex(Vector(100, 100, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-            Vertex(Vector(25, 90, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
+            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
+            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
+            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
             0,
             1,
             10,
@@ -135,9 +135,9 @@ void Render::specular() {
 void Render::diffuse() {
     Image image(128);
     Triangle triangle(
-            Vertex(Vector(61, 10, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-            Vertex(Vector(100, 100, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-            Vertex(Vector(25, 90, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
+            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
+            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
+            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
             0,
             0,
             0,
@@ -184,9 +184,9 @@ int Render::clamp(int value) {
 void Render::blinn_phong() {
     Image image(128);
     Triangle triangle(
-            Vertex(Vector(50, -50, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-            Vertex(Vector(0, 50, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-            Vertex(Vector(-50, -50, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
+            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
+            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
+            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
             0.4,
             1,
             5,

@@ -38,8 +38,8 @@ struct Camera {
         Vector origin = position + Vector(0, 0, 0);
 
         // get perspective either side of camera
-        float nx = (((2*(pixel.x + 0.5f)/w)-1) * angle)*w;
-        float ny = (((2*(pixel.y + 0.5f)/h)-1) * angle)*h;
+        float nx = (((2*(pixel.x + 0.5f)/w)-1) * angle);
+        float ny = (((2*(pixel.y + 0.5f)/h)-1) * angle);
 
         // get direction from camera to world
         Vector dir = forward + (right * (nx)) + (up * (ny));
