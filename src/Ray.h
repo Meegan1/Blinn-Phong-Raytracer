@@ -14,7 +14,7 @@ struct Ray {
 
     Ray(Vector origin, Vector direction) : origin(origin), direction(direction) {}
 
-    bool intersects(Triangle &triangle, Vector &point, float &alpha, float &beta, float &gamma) {
+    bool intersects(Triangle &triangle, Vector &point, float &alpha, float &beta, float &gamma, float &distance) {
         Vector p = triangle.A.position;
         Vector q = triangle.B.position;
         Vector r = triangle.C.position;
@@ -30,6 +30,8 @@ struct Ray {
         float nom = (p - origin).dot(n);
         float denom = direction.dot(n);
         float t = nom/denom;
+
+        distance = t;
 
         // if point is behind camera
         if(t < 0)
@@ -65,5 +67,10 @@ struct Ray {
     bool intersects(Triangle &triangle, float &alpha, float &beta, float &gamma) {
         Vector point;
         return intersects(triangle, point, alpha, beta, gamma);
+    }
+
+    bool intersects(Triangle &triangle, Vector &point, float &alpha, float &beta, float &gamma) {
+        float distance;
+        return intersects(triangle, point, alpha, beta, gamma, distance);
     }
 };

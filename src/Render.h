@@ -24,6 +24,8 @@ public:
     static void diffuse();
 
     static void blinn_phong();
+
+    static void shadow();
 };
 
 

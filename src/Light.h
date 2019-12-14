@@ -13,10 +13,10 @@ class Light {
 public:
     Vector position;
     Vector direction;
-    float ambient, specular, diffuse;
+    float ambient, specular, diffuse, diffuse_reflectivity;
 
-    Light(Vector position, Vector direction, float ambient, float specular, float diffuse) : position(position), direction(direction),
-                                                                              ambient(ambient), specular(specular), diffuse(diffuse) {}
+    Light(Vector position, Vector direction, float ambient, float specular, float diffuse, float diffuse_reflectivity) : position(position), direction(direction),
+                                                                              ambient(ambient), specular(specular), diffuse(diffuse), diffuse_reflectivity(diffuse_reflectivity) {}
 };
 
 

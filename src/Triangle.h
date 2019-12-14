@@ -10,17 +10,16 @@
  */
 struct Triangle {
     Vertex A, B, C;
-    float ambient{}, specular{}, specular_coefficient{}, diffuse{};
+    float ambient{}, specular{}, specular_coefficient{};
 
     Triangle(Vertex A, Vertex B, Vertex C) : A(A), B(B), C(C) {}
 
-    Triangle(Vertex a, Vertex b, Vertex c, float ambient, float specular, float coefficient, float diffuse) : A(a),
+    Triangle(Vertex a, Vertex b, Vertex c, float ambient, float specular, float coefficient) : A(a),
                                                                                                               B(b),
                                                                                                               C(c),
                                                                                                               ambient(ambient),
                                                                                                               specular(specular),
-                                                                                                              specular_coefficient(coefficient),
-                                                                                                              diffuse(diffuse) {}
+                                                                                                              specular_coefficient(coefficient) {}
 
     // Get barycentric co-ordinates at point p, from vertices [A, B, C]
     void get_barycentric(Vector p, float &alpha, float &beta, float &gamma) {

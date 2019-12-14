@@ -8,5 +8,6 @@ int main() {
     Render::specular();
     Render::diffuse();
     Render::blinn_phong();
+    Render::shadow();
     return 0;
 }
