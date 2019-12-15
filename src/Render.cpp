@@ -236,9 +236,17 @@ void Render::shadow() {
 
     // floor
     triangles.emplace_back(
-            Vertex(Vector(1, -1, 2), RGB(0, 0, 0), UV(0, 0)),
-            Vertex(Vector(0, -1, 2), RGB(0, 0, 0), UV(0, 0)),
-            Vertex(Vector(0, -1, 0), RGB(0, 0, 0), UV(0, 0)),
+            Vertex(Vector(2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+            0.4,
+            0.5,
+            32
+    );
+    triangles.emplace_back(
+            Vertex(Vector(-2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
             0.4,
             0.5,
             32
