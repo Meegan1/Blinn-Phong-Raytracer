@@ -5,21 +5,26 @@
 #ifndef ASSIGNMENT_3_TRIANGLE_H
 #define ASSIGNMENT_3_TRIANGLE_H
 
+#include "Vertex.h"
+
 /*
  * Struct for Triangle
  */
 struct Triangle {
     Vertex A, B, C;
-    float ambient{}, specular{}, specular_coefficient{};
+    Vector ambient{}, specular{}, diffuse{};
+    float diffuse_reflectivity;
 
     Triangle(Vertex A, Vertex B, Vertex C) : A(A), B(B), C(C) {}
 
-    Triangle(Vertex a, Vertex b, Vertex c, float ambient, float specular, float coefficient) : A(a),
-                                                                                                              B(b),
-                                                                                                              C(c),
-                                                                                                              ambient(ambient),
-                                                                                                              specular(specular),
-                                                                                                              specular_coefficient(coefficient) {}
+    Triangle(Vertex a, Vertex b, Vertex c, Vector ambient, Vector specular, Vector diffuse, float diffuse_reflectivity)
+            : A(a),
+              B(b),
+              C(c),
+              ambient(ambient),
+              specular(specular),
+              diffuse(diffuse),
+              diffuse_reflectivity(diffuse_reflectivity) {}
 
     // Get barycentric co-ordinates at point p, from vertices [A, B, C]
     void get_barycentric(Vector p, float &alpha, float &beta, float &gamma) {

@@ -4,7 +4,6 @@
 
 #include <cmath>
 #include "Ray.h"
-#include "Matrix4x4.h"
 
 #ifndef ASSIGNMENT_3_CAMERA_H
 #define ASSIGNMENT_3_CAMERA_H

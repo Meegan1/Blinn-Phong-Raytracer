@@ -7,9 +7,8 @@
 #ifndef ASSIGNMENT_3_VECTOR_H
 #define ASSIGNMENT_3_VECTOR_H
 
-#endif //ASSIGNMENT_3_VECTOR_H
-
 #include "cmath"
+#include "Vertex.h"
 
 typedef float Position;
 
@@ -17,10 +16,13 @@ typedef float Position;
  * Struct for Vector
  */
 struct Vector {
-    Position x, y, z;
+    union{Position x; float r;};
+    union{Position y; float g;};
+    union{Position z; float b;};
 
     Vector() : x(0), y(0), z(0) {}
     Vector(Position x, Position y, Position z) : x(x), y(y), z(z) {}
+    Vector(Position value) : x(value), y(value), z(value) {}
 
     Vector operator - (const Vector &other) {
         return {x - other.x, y - other.y, z - other.z};
@@ -64,3 +66,5 @@ struct Vector {
         return {(y * other.z) - (z * other.y), (z * other.x) - (x * other.z), (x * other.y) - (y * other.x)};
     }
 };
+
+#endif //ASSIGNMENT_3_VECTOR_H

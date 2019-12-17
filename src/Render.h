@@ -5,8 +5,6 @@
 #ifndef ASSIGNMENT_3_RENDER_H
 #define ASSIGNMENT_3_RENDER_H
 
-#include "Texture.h"
-
 
 class Render {
 public:

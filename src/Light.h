@@ -5,18 +5,19 @@
 #ifndef ASSIGNMENT_4_LIGHT_H
 #define ASSIGNMENT_4_LIGHT_H
 
-#ifndef ASSIGNMENT_3_VECTOR_H
 #include "Vector.h"
-#endif
 
 class Light {
 public:
     Vector position;
     Vector direction;
-    float ambient, specular, diffuse, diffuse_reflectivity;
+    Vector ambient, specular;
+    float specular_coefficient;
 
-    Light(Vector position, Vector direction, float ambient, float specular, float diffuse, float diffuse_reflectivity) : position(position), direction(direction.normalize()),
-                                                                              ambient(ambient), specular(specular), diffuse(diffuse), diffuse_reflectivity(diffuse_reflectivity) {}
+    Light(Vector position, Vector direction, Vector ambient, Vector specular, float specular_coefficient)
+            : position(position), direction(direction.normalize()),
+              ambient(ambient), specular(specular),
+              specular_coefficient(specular_coefficient) {}
 };
 
 

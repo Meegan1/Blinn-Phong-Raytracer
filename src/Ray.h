@@ -6,7 +6,8 @@
 #ifndef ASSIGNMENT_3_RAY_H
 #define ASSIGNMENT_3_RAY_H
 
-#endif //ASSIGNMENT_3_RAY_H
+
+#include "Vector.h"
 
 struct Ray {
     Vector origin;
@@ -86,3 +87,4 @@ struct Ray {
         return intersects(triangle, point, distance, alpha, beta, gamma);
     }
 };
+#endif //ASSIGNMENT_3_RAY_H
