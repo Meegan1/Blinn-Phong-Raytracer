@@ -253,24 +253,45 @@ void Render::shadow() {
     );
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Light light(camera.position, camera.forward, 1, 1, 1, 1);
+    Light light(Vector(0, 1, 0), Vector(0, -1, 1), 1, 1, 1, 1);
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
             Ray r = camera.pixelToRay(Pixel(x, y));
-            float alpha, beta, gamma;
-            Vector point;
 
             float z_buffer = MAXFLOAT;
 
             for (Triangle &triangle : triangles) {
                 float distance;
-                if (r.intersects(triangle, point, alpha, beta, gamma, distance)) {
+                float alpha, beta, gamma;
+                Vector point;
+                if (r.intersects(triangle, point, distance, alpha, beta, gamma)) {
                     if(distance >= z_buffer)
                         continue;
                     z_buffer = distance;
 
-                    Vector normal = (triangle.B.position - triangle.A.position).cross(
+                    // calculate shadow
+                    Ray shadow_ray(light.position, point - light.position);
+                    float shadow_z = MAXFLOAT;
+                    for (Triangle &shadow_triangle : triangles) {
+                        float shadow_distance;
+                        if(shadow_ray.intersects(shadow_triangle, shadow_distance)) {
+                            if(shadow_distance >= shadow_z)
+                                continue;
+                            shadow_z = shadow_distance;
+                        }
+                    }
+                    float light_distance = 0;
+                    shadow_ray.intersects(triangle, light_distance);
+                    if(shadow_z != light_distance) {
+                        image[x][y].r = 0;
+                        image[x][y].g = 0;
+                        image[x][y].b = 0;
+                        continue;
+                    }
+
+
+                        Vector normal = (triangle.B.position - triangle.A.position).cross(
                             (triangle.C.position - triangle.A.position)).normalize();
                     RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 

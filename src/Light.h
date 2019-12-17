@@ -15,7 +15,7 @@ public:
     Vector direction;
     float ambient, specular, diffuse, diffuse_reflectivity;
 
-    Light(Vector position, Vector direction, float ambient, float specular, float diffuse, float diffuse_reflectivity) : position(position), direction(direction),
+    Light(Vector position, Vector direction, float ambient, float specular, float diffuse, float diffuse_reflectivity) : position(position), direction(direction.normalize()),
                                                                               ambient(ambient), specular(specular), diffuse(diffuse), diffuse_reflectivity(diffuse_reflectivity) {}
 };
 

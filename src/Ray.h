@@ -14,7 +14,7 @@ struct Ray {
 
     Ray(Vector origin, Vector direction) : origin(origin), direction(direction) {}
 
-    bool intersects(Triangle &triangle, Vector &point, float &alpha, float &beta, float &gamma, float &distance) {
+    bool intersects(Triangle &triangle, Vector &point, float &distance, float &alpha, float &beta, float &gamma) {
         Vector p = triangle.A.position;
         Vector q = triangle.B.position;
         Vector r = triangle.C.position;
@@ -61,16 +61,28 @@ struct Ray {
 
     bool intersects(Triangle &triangle) {
         Vector point;
-        float alpha, beta, gamma;
-        return intersects(triangle, point, alpha, beta, gamma);
+        float alpha, beta, gamma, distance;
+        return intersects(triangle, point, distance, alpha, beta, gamma);
     }
     bool intersects(Triangle &triangle, float &alpha, float &beta, float &gamma) {
         Vector point;
-        return intersects(triangle, point, alpha, beta, gamma);
+        float distance;
+        return intersects(triangle, point, distance, alpha, beta, gamma);
     }
 
     bool intersects(Triangle &triangle, Vector &point, float &alpha, float &beta, float &gamma) {
         float distance;
-        return intersects(triangle, point, alpha, beta, gamma, distance);
+        return intersects(triangle, point,distance, alpha, beta, gamma);
+    }
+
+    bool intersects(Triangle &triangle, Vector &point, float &distance) {
+        float alpha, beta, gamma;
+        return intersects(triangle, point, distance, alpha, beta, gamma);
+    }
+
+    bool intersects(Triangle &triangle, float &distance) {
+        Vector point;
+        float alpha, beta, gamma;
+        return intersects(triangle, point, distance, alpha, beta, gamma);
     }
 };
