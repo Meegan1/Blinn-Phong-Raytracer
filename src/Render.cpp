@@ -281,7 +281,7 @@ void Render::shadow() {
                             shadow_z = shadow_distance;
                         }
                     }
-                    float light_distance = 0;
+                    float light_distance = MAXFLOAT;
                     shadow_ray.intersects(triangle, light_distance);
                     if(shadow_z != light_distance) {
                         image[x][y].r = 0;
