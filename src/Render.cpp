@@ -242,18 +242,18 @@ void Render::shadow() {
 
     // floor
     triangles.emplace_back(
+            Vertex(Vector(-2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vector(0.1f),
             Vector(1.0f),
             Vector(1.0f),
             1
     );
     triangles.emplace_back(
+            Vertex(Vector(2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
             Vector(0.1f),
             Vector(1.0f),
             Vector(1.0f),
@@ -342,18 +342,18 @@ void Render::cornell() {
 
     // FLOOR
     triangles.emplace_back(
+            Vertex(Vector(-1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vector(0.1f),
             Vector(1.0f),
             Vector(1.0f),
             1
     );
     triangles.emplace_back(
+            Vertex(Vector(1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
             Vector(0.1f),
             Vector(1.0f),
             Vector(1.0f),
@@ -361,15 +361,15 @@ void Render::cornell() {
     );
 
     // ROOF
-//    triangles.emplace_back(
-//            Vertex(Vector(1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
-//            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
-//            Vertex(Vector(-1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
-//            Vector(0.1f),
-//            Vector(1.0f),
-//            Vector(1.0f),
-//            1
-//    );
+    triangles.emplace_back(
+            Vertex(Vector(-1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
+            Vector(0.1f),
+            Vector(1.0f),
+            Vector(1.0f),
+            1
+    );
     triangles.emplace_back(
             Vertex(Vector(1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
@@ -382,18 +382,18 @@ void Render::cornell() {
 
     // LEFT WALL
     triangles.emplace_back(
-            Vertex(Vector(1, 1, 0), RGB(255, 0, 0), UV(0, 0)),
-            Vertex(Vector(1,  -1, 1), RGB(255, 0, 0), UV(0, 0)),
             Vertex(Vector(1, -1, 0), RGB(255, 0, 0), UV(0, 0)),
+            Vertex(Vector(1, 1, 0), RGB(255,0, 0), UV(0, 0)),
+            Vertex(Vector(1,  -1, 1), RGB(255,0, 0), UV(0, 0)),
             Vector(0.1f),
             Vector(1.0f),
             Vector(1.0f),
             1
     );
     triangles.emplace_back(
-            Vertex(Vector(1, -1, 1), RGB(255, 0, 0), UV(0, 0)),
-            Vertex(Vector(1,  1, 0), RGB(255, 0, 0), UV(0, 0)),
-            Vertex(Vector(1, 1, 1), RGB(255, 0, 0), UV(0, 0)),
+            Vertex(Vector(1, -1, 1), RGB(255,0, 0), UV(0, 0)),
+            Vertex(Vector(1,  1, 0), RGB(255,0, 0), UV(0, 0)),
+            Vertex(Vector(1, 1, 1), RGB(255,0, 0), UV(0, 0)),
             Vector(0.1f),
             Vector(1.0f),
             Vector(1.0f),

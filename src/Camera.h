@@ -43,6 +43,6 @@ struct Camera {
         // get direction from camera to world
         Vector dir = forward + (right * (nx)) + (up * (ny));
 
-        return {origin, Vector(dir.x, dir.y, dir.z).normalize()};
+        return {origin, Vector(dir.x, dir.y, dir.z)};
     }
 };

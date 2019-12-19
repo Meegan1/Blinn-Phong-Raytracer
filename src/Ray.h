@@ -21,12 +21,12 @@ struct Ray {
         Vector r = triangle.C.position;
 
         // triangle vectors
-        Vector u = (q - p).normalize();
-        Vector v = (r - p).normalize();
+        Vector u = q - p;
+        Vector v = r - p;
 
         // plane vectors
-        Vector n = u.cross(v).normalize();
-        Vector w = n.cross(u).normalize();
+        Vector n = u.cross(v);
+        Vector w = n.cross(u);
 
         float nom = (p - origin).dot(n);
         float denom = direction.dot(n);
