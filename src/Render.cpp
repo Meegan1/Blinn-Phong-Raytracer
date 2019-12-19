@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Image.h"
+#include "Color.h"
 
 
 void Render::intersection() {
@@ -47,7 +48,7 @@ void Render::barycentric() {
             Ray r = camera.pixelToRay(Pixel(x, y));
             float alpha, beta, gamma;
             if (r.intersects(triangle, alpha, beta, gamma)) {
-                RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
+                RGB color = ((triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma)).toRGB();
 
                 image[x][y].r = color.r;
                 image[x][y].g = color.g;
@@ -65,14 +66,14 @@ void Render::ambient() {
             Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
             Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
             Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
-            Vector(0.1f),
-            Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0.2f),
+            Vector(0),
+            Vector(0),
+            0
     ); // create triangle with attributes
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(0), 0);
+    Light light(camera.position, camera.forward, Vector(1.0f), Vector(0), Vector(1));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -82,8 +83,8 @@ void Render::ambient() {
             if (r.intersects(triangle, point, alpha, beta, gamma)) {
                 RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 
-                Vector ambient = color * light.ambient * triangle.ambient;
-                color = ambient;
+                Vector ambient = light.computeAmbient(triangle, color);
+                color = ambient.toRGB();
 
                 image[x][y].r = color.r;
                 image[x][y].g = color.g;
@@ -100,15 +101,15 @@ void Render::specular() {
             Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
             Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
             Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
-            Vector(0.1f),
+            Vector(0),
+            Vector(0),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            128
     ); // create triangle with attributes
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Vector normal = (triangle.B.position - triangle.A.position).cross((triangle.C.position - triangle.A.position)).normalize();
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(255), 32);
+    Vector normal = triangle.normal();
+    Light light(camera.position, camera.forward, Vector(1.0f), Vector(1), Vector(1));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -118,10 +119,9 @@ void Render::specular() {
             if (r.intersects(triangle, point, alpha, beta, gamma)) {
                 RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 
-                Vector halfDirection = (((point-light.position).normalize() + r.direction) / 2).normalize();
-                float angle = halfDirection.dot(normal) / (normal.magnitude() * halfDirection.magnitude());
-                Vector specular = light.specular * triangle.specular * pow(angle, light.specular_coefficient);
-                color = color + specular;
+                Vector specular = light.computeSpecular(triangle, normal, point, r.direction);
+
+                color = specular.toRGB();
 
                 image[x][y].r = clamp(color.r);
                 image[x][y].g = clamp(color.g);
@@ -139,15 +139,15 @@ void Render::diffuse() {
             Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
             Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
             Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
-            Vector(0.1f),
+            Vector(0),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            0
     ); // create triangle with attributes
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Vector normal = (triangle.B.position - triangle.A.position).cross((triangle.C.position - triangle.A.position)).normalize();
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(1.0f), 32);
+    Vector normal = triangle.normal();
+    Light light(camera.position, camera.forward, Vector(1.0f), Vector(1), Vector(1));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -157,9 +157,9 @@ void Render::diffuse() {
             if (r.intersects(triangle, point, alpha, beta, gamma)) {
                 RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 
-                float angle = normal.dot(r.direction);
-                Vector diffuse = color * (triangle.diffuse * triangle.diffuse_reflectivity * angle);
-                color = diffuse;
+                Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
+
+                color = diffuse.toRGB();
 
                 image[x][y].r = clamp(color.r);
                 image[x][y].g = clamp(color.g);
@@ -188,15 +188,15 @@ void Render::blinn_phong() {
             Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
             Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
             Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
-            Vector(0.1f),
+            Vector(0.2f),
             Vector(1.0f),
             Vector(1.0f),
-            1
+            128
     ); // create triangle with attributes
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
     Vector normal = (triangle.B.position - triangle.A.position).cross((triangle.C.position - triangle.A.position)).normalize();
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(255), 32);
+    Light light(camera.position, camera.forward, Vector(1.0f), Vector(1), Vector(1));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -204,18 +204,17 @@ void Render::blinn_phong() {
             float alpha, beta, gamma;
             Vector point;
             if (r.intersects(triangle, point, alpha, beta, gamma)) {
-                Vector color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
+                Vector normal = triangle.normal();
 
-                Vector ambient = color * (light.ambient * triangle.ambient);
+                RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 
-                Vector halfDirection = (((point-light.position).normalize() + r.direction) / 2).normalize();
-                float specular_angle = halfDirection.dot(normal);
-                Vector specular = light.specular * triangle.specular * pow(specular_angle, light.specular_coefficient);
+                Vector ambient = light.computeAmbient(triangle, color);
 
-                float diffuse_angle = normal.dot(r.direction);
-                Vector diffuse = color * (triangle.diffuse * triangle.diffuse_reflectivity * diffuse_angle);
+                Vector specular = light.computeSpecular(triangle, normal, point, r.direction);
 
-                color = ambient + diffuse + specular;
+                Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
+
+                color = (ambient + diffuse + specular).toRGB();
 
                 image[x][y].r = clamp(color.r);
                 image[x][y].g = clamp(color.g);
@@ -234,34 +233,34 @@ void Render::shadow() {
             Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
             Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
             Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
-            Vector(0.1f),
+            Vector(1),
             Vector(1.0f),
             Vector(1.0f),
-            1
+            128
     ); // create triangle with attributes
 
     // floor
     triangles.emplace_back(
-            Vertex(Vector(-2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(-3, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(3, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-3, -1, 6), RGB(255, 255, 255), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
     triangles.emplace_back(
-            Vertex(Vector(2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-2, -1, 5), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(2, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(3, -1, 6), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-3, -1, 6), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(3, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Light light(Vector(0, 1, 0), Vector(0, -1, 1), Vector(1.0f), Vector(1.0f), 4);
+    Light light(Vector(0, 1, 0), Vector(0, -1, 1), Vector(0.4), Vector(1), Vector(1));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -299,20 +298,17 @@ void Render::shadow() {
                     }
 
 
-                    Vector normal = (triangle.B.position - triangle.A.position).cross(
-                            (triangle.C.position - triangle.A.position)).normalize();
+                    Vector normal = triangle.normal();
+
                     RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 
-                    Vector ambient = color * (light.ambient * triangle.ambient);
+                    Vector ambient = light.computeAmbient(triangle, color);
 
-                    Vector halfDirection = (((point-light.position).normalize() + r.direction) / 2).normalize();
-                    float specular_angle = halfDirection.dot(normal);
-                    Vector specular = light.specular * triangle.specular * pow(specular_angle, light.specular_coefficient);
+                    Vector specular = light.computeSpecular(triangle, normal, point, r.direction);
 
-                    float diffuse_angle = normal.dot(r.direction);
-                    Vector diffuse = color * (triangle.diffuse * triangle.diffuse_reflectivity * diffuse_angle);
+                    Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
 
-                    color = ambient + diffuse + specular;
+                    color = (ambient + diffuse + specular).toRGB();
 
                     image[x][y].r = clamp(color.r);
                     image[x][y].g = clamp(color.g);
@@ -330,118 +326,109 @@ void Render::cornell() {
     Image image(128);
 
     std::vector<Triangle> triangles;
-//    triangles.emplace_back(
-//            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-//            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-//            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
-//            Vector(0.1f),
-//            Vector(1.0f),
-//            Vector(1.0f),
-//            1
-//    ); // create triangle with attributes
 
     // FLOOR
     triangles.emplace_back(
             Vertex(Vector(1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
     triangles.emplace_back(
-            Vertex(Vector(1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
 
     // ROOF
     triangles.emplace_back(
-            Vertex(Vector(-1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
     triangles.emplace_back(
             Vertex(Vector(1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
 
     // LEFT WALL
     triangles.emplace_back(
             Vertex(Vector(1, -1, 0), RGB(255, 0, 0), UV(0, 0)),
             Vertex(Vector(1, 1, 0), RGB(255,0, 0), UV(0, 0)),
-            Vertex(Vector(1,  -1, 1), RGB(255,0, 0), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(1,  -1, 2), RGB(255,0, 0), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
     triangles.emplace_back(
-            Vertex(Vector(1, -1, 1), RGB(255,0, 0), UV(0, 0)),
+            Vertex(Vector(1, -1, 2), RGB(255,0, 0), UV(0, 0)),
             Vertex(Vector(1,  1, 0), RGB(255,0, 0), UV(0, 0)),
-            Vertex(Vector(1, 1, 1), RGB(255,0, 0), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(1, 1, 2), RGB(255,0, 0), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
 
     // RIGHT WALL
     triangles.emplace_back(
-            Vertex(Vector(-1,  -1, 1), RGB(0, 255, 0), UV(0, 0)),
+            Vertex(Vector(-1,  -1, 2), RGB(0, 255, 0), UV(0, 0)),
             Vertex(Vector(-1, 1, 0), RGB(0, 255, 0), UV(0, 0)),
             Vertex(Vector(-1, -1, 0), RGB(0, 255, 0), UV(0, 0)),
-            Vector(0.1f),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
     triangles.emplace_back(
             Vertex(Vector(-1,  1, 0), RGB(0, 255, 0), UV(0, 0)),
-            Vertex(Vector(-1, -1, 1), RGB(0, 255, 0), UV(0, 0)),
-            Vertex(Vector(-1, 1, 1), RGB(0, 255, 0), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(-1, -1, 2), RGB(0, 255, 0), UV(0, 0)),
+            Vertex(Vector(-1, 1, 2), RGB(0, 255, 0), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
 
     // BACK WALL
     triangles.emplace_back(
-            Vertex(Vector(1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
     triangles.emplace_back(
-            Vertex(Vector(-1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, 1, 1), RGB(255, 255, 255), UV(0, 0)),
-            Vector(0.1f),
+            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
+            Vector(1),
             Vector(1.0f),
-            Vector(1.0f),
-            1
+            Vector(0),
+            4
     );
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Light light(Vector(0, 0.9, 0), Vector(0, -1, 0), Vector(1.0f), Vector(1.0f), 4);
+    Light light(Vector(0, 0, 1), Vector(0, -1, 0), Vector(0.3), Vector(0.5), Vector(1));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -478,20 +465,17 @@ void Render::cornell() {
                     }
 
 
-                    Vector normal = (triangle.B.position - triangle.A.position).cross(
-                            (triangle.C.position - triangle.A.position)).normalize();
+                    Vector normal = triangle.normal();
+
                     RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 
-                    Vector ambient = color * (light.ambient * triangle.ambient);
+                    Vector ambient = light.computeAmbient(triangle, color);
 
-                    Vector halfDirection = (((point-light.position).normalize() + r.direction) / 2).normalize();
-                    float specular_angle = halfDirection.dot(normal);
-                    Vector specular = light.specular * triangle.specular * pow(specular_angle, light.specular_coefficient);
+                    Vector specular = light.computeSpecular(triangle, normal, point, r.direction);
 
-                    float diffuse_angle = normal.dot(r.direction);
-                    Vector diffuse = color * (triangle.diffuse * triangle.diffuse_reflectivity * diffuse_angle);
+                    Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
 
-                    color = ambient + diffuse + specular;
+                    color = (Color::correct(ambient + diffuse + specular)/shadow_z).toRGB();
 
                     image[x][y].r = clamp(color.r);
                     image[x][y].g = clamp(color.g);

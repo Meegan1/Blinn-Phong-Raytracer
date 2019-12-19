@@ -32,7 +32,7 @@ struct Vertex {
     RGB color;
     UV uv;
 
-    Vertex(Vector position, RGB color, UV uv) : position(position), color(color), uv(uv) {}
+    Vertex(Vector position, RGB color, UV uv) : position(position), color(color.RGBToVector()), uv(uv) {}
 };
 
 #endif //ASSIGNMENT_3_VERTEX_H

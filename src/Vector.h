@@ -65,6 +65,18 @@ struct Vector {
     Vector cross(const Vector &other) {
         return {(y * other.z) - (z * other.y), (z * other.x) - (x * other.z), (x * other.y) - (y * other.x)};
     }
+
+    Vector pow(float num) {
+        return {std::pow(x, num), std::pow(y, num), std::pow(z, num)};
+    }
+
+    Vector toRGB() {
+        return {x * 255, y * 255, z * 255};
+    }
+
+    Vector RGBToVector() {
+        return {x / 255, y / 255, z / 255};
+    }
 };
 
 #endif //ASSIGNMENT_3_VECTOR_H
