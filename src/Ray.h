@@ -9,6 +9,8 @@
 
 #include "Vector.h"
 
+#define EPSILON 0.0000001
+
 struct Ray {
     Vector origin;
     Vector direction;
@@ -25,12 +27,12 @@ struct Ray {
         Vector v = r - p;
 
         // plane vectors
-        Vector n = u.cross(v);
+        Vector n = u.cross(v).normalize();
         Vector w = n.cross(u);
 
         float nom = (p - origin).dot(n);
         float denom = direction.dot(n);
-        float t = nom/denom;
+        double t = nom/denom;
 
         distance = t;
 
@@ -51,13 +53,15 @@ struct Ray {
         Vector qsp(qs.dot(u), qs.dot(w), qs.dot(n));
         Vector rsp(rs.dot(u), rs.dot(w), rs.dot(n));
 
-        Triangle triangle1(Vertex(psp, RGB(0, 0, 0), UV(0, 0)),
-                           Vertex(qsp, RGB(0, 0, 0), UV(0, 0)),
-                           Vertex(rsp, RGB(0, 0, 0), UV(0, 0)));
+        Triangle triangle1(
+                Vertex(psp, RGB(0, 0, 0), UV(0, 0)),
+                Vertex(qsp, RGB(0, 0, 0), UV(0, 0)),
+                Vertex(rsp, RGB(0, 0, 0), UV(0, 0))
+        );
 
         triangle1.get_barycentric(sp, alpha, beta, gamma);
 
-        return !(alpha < 0 || beta < 0 || gamma < 0 );
+        return !(alpha < -EPSILON || beta < -EPSILON || gamma < -EPSILON );
     }
 
     bool intersects(Triangle &triangle) {

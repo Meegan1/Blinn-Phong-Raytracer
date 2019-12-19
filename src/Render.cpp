@@ -342,9 +342,9 @@ void Render::cornell() {
 
     // FLOOR
     triangles.emplace_back(
-            Vertex(Vector(-1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vertex(Vector(-1, -1, 1), RGB(255, 255, 255), UV(0, 0)),
+            Vertex(Vector(-1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
             Vector(0.1f),
             Vector(1.0f),
             Vector(1.0f),
@@ -446,12 +446,11 @@ void Render::cornell() {
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
             Ray r = camera.pixelToRay(Pixel(x, y));
-
             float z_buffer = MAXFLOAT;
 
             for (Triangle &triangle : triangles) {
-                float distance;
-                float alpha, beta, gamma;
+                float distance = 0;
+                float alpha = 0, beta = 0, gamma = 0;
                 Vector point;
                 if (r.intersects(triangle, point, distance, alpha, beta, gamma)) {
                     if(distance >= z_buffer)
