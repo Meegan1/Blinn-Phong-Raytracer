@@ -34,7 +34,7 @@ struct Camera {
     }
 
     Ray pixelToRay(Pixel pixel) {
-        Vector origin = position + Vector(0, 0, 0);
+        Vector origin = position - forward; // set back 1 unit
 
         // get perspective either side of camera
         float nx = (((2*(pixel.x + 0.5f)/w)-1) * angle);

@@ -24,6 +24,8 @@ public:
     static void blinn_phong();
 
     static void shadow();
+
+    static void cornell();
 };
 
 

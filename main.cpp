@@ -9,5 +9,6 @@ int main() {
     Render::diffuse();
     Render::blinn_phong();
     Render::shadow();
+    Render::cornell();
     return 0;
 }

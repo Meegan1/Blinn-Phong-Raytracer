@@ -13,7 +13,7 @@ struct Ray {
     Vector origin;
     Vector direction;
 
-    Ray(Vector origin, Vector direction) : origin(origin), direction(direction) {}
+    Ray(Vector origin, Vector direction) : origin(origin), direction(direction.normalize()) {}
 
     bool intersects(Triangle &triangle, Vector &point, float &distance, float &alpha, float &beta, float &gamma) {
         Vector p = triangle.A.position;
