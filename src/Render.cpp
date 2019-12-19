@@ -8,6 +8,7 @@
 #include "Light.h"
 #include "Image.h"
 #include "Color.h"
+#include "World.h"
 
 
 void Render::intersection() {
@@ -324,23 +325,29 @@ void Render::shadow() {
 
 void Render::cornell() {
     Image image(128);
+    World world;
+    world.addLight(Light(Vector(0, 0, 1), Vector(0, -1, 0), Vector(0.3), Vector(0.5), Vector(1)));
 
-    std::vector<Triangle> triangles;
-
-    // FLOOR
-    triangles.emplace_back(
-            Vertex(Vector(1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+   // BACK WALL
+    world.addPlane(
+            Vector(-1, -1, 2),
+            Vector(1, -1, 2),
+            Vector(1, 1, 2),
+            Vector(-1, 1, 2),
+            RGB(255, 255, 255),
             Vector(1),
             Vector(1.0f),
             Vector(0),
             4
-    );
-    triangles.emplace_back(
-            Vertex(Vector(1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, -1, 0), RGB(255, 255, 255), UV(0, 0)),
+            );
+
+    // FLOOR
+    world.addPlane(
+            Vector(-1, -1, 0),
+            Vector(1, -1, 0),
+            Vector(1, -1, 2),
+            Vector(-1, -1, 2),
+            RGB(255, 255, 255),
             Vector(1),
             Vector(1.0f),
             Vector(0),
@@ -348,19 +355,12 @@ void Render::cornell() {
     );
 
     // ROOF
-    triangles.emplace_back(
-            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vector(1),
-            Vector(1.0f),
-            Vector(0),
-            4
-    );
-    triangles.emplace_back(
-            Vertex(Vector(1, 1, 0), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
+    world.addPlane(
+            Vector(1, 1, 0),
+            Vector(-1, 1, 0),
+            Vector(-1, 1, 2),
+            Vector(1, 1, 2),
+            RGB(255, 255, 255),
             Vector(1),
             Vector(1.0f),
             Vector(0),
@@ -368,19 +368,12 @@ void Render::cornell() {
     );
 
     // LEFT WALL
-    triangles.emplace_back(
-            Vertex(Vector(1, -1, 0), RGB(255, 0, 0), UV(0, 0)),
-            Vertex(Vector(1, 1, 0), RGB(255,0, 0), UV(0, 0)),
-            Vertex(Vector(1,  -1, 2), RGB(255,0, 0), UV(0, 0)),
-            Vector(1),
-            Vector(1.0f),
-            Vector(0),
-            4
-    );
-    triangles.emplace_back(
-            Vertex(Vector(1, -1, 2), RGB(255,0, 0), UV(0, 0)),
-            Vertex(Vector(1,  1, 0), RGB(255,0, 0), UV(0, 0)),
-            Vertex(Vector(1, 1, 2), RGB(255,0, 0), UV(0, 0)),
+    world.addPlane(
+            Vector(1, -1, 2),
+            Vector(1, -1, 0),
+            Vector(1, 1, 0),
+            Vector(1, 1, 2),
+            RGB(255, 0, 0),
             Vector(1),
             Vector(1.0f),
             Vector(0),
@@ -388,39 +381,12 @@ void Render::cornell() {
     );
 
     // RIGHT WALL
-    triangles.emplace_back(
-            Vertex(Vector(-1,  -1, 2), RGB(0, 255, 0), UV(0, 0)),
-            Vertex(Vector(-1, 1, 0), RGB(0, 255, 0), UV(0, 0)),
-            Vertex(Vector(-1, -1, 0), RGB(0, 255, 0), UV(0, 0)),
-            Vector(1),
-            Vector(1.0f),
-            Vector(0),
-            4
-    );
-    triangles.emplace_back(
-            Vertex(Vector(-1,  1, 0), RGB(0, 255, 0), UV(0, 0)),
-            Vertex(Vector(-1, -1, 2), RGB(0, 255, 0), UV(0, 0)),
-            Vertex(Vector(-1, 1, 2), RGB(0, 255, 0), UV(0, 0)),
-            Vector(1),
-            Vector(1.0f),
-            Vector(0),
-            4
-    );
-
-    // BACK WALL
-    triangles.emplace_back(
-            Vertex(Vector(1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(-1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vector(1),
-            Vector(1.0f),
-            Vector(0),
-            4
-    );
-    triangles.emplace_back(
-            Vertex(Vector(-1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, -1, 2), RGB(255, 255, 255), UV(0, 0)),
-            Vertex(Vector(1, 1, 2), RGB(255, 255, 255), UV(0, 0)),
+    world.addPlane(
+            Vector(-1, -1, 0),
+            Vector(-1, -1, 2),
+            Vector(-1, 1, 2),
+            Vector(-1, 1, 0),
+            RGB(0, 255, 0),
             Vector(1),
             Vector(1.0f),
             Vector(0),
@@ -435,7 +401,7 @@ void Render::cornell() {
             Ray r = camera.pixelToRay(Pixel(x, y));
             float z_buffer = MAXFLOAT;
 
-            for (Triangle &triangle : triangles) {
+            for (Triangle &triangle : world.triangles) {
                 float distance = 0;
                 float alpha = 0, beta = 0, gamma = 0;
                 Vector point;
@@ -447,7 +413,7 @@ void Render::cornell() {
                     // calculate shadow
                     Ray shadow_ray(light.position, point - light.position);
                     float shadow_z = MAXFLOAT;
-                    for (Triangle &shadow_triangle : triangles) {
+                    for (Triangle &shadow_triangle : world.triangles) {
                         float shadow_distance;
                         if(shadow_ray.intersects(shadow_triangle, shadow_distance)) {
                             if(shadow_distance >= shadow_z)

@@ -8,8 +8,6 @@
 #ifndef ASSIGNMENT_3_CAMERA_H
 #define ASSIGNMENT_3_CAMERA_H
 
-#endif //ASSIGNMENT_3_CAMERA_H
-
 struct Pixel {
     float x, y;
     Pixel(float x, float y) : x(x), y(y) {}
@@ -46,3 +44,5 @@ struct Camera {
         return {origin, Vector(dir.x, dir.y, dir.z)};
     }
 };
+
+#endif //ASSIGNMENT_3_CAMERA_H
