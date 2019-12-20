@@ -74,7 +74,7 @@ void Render::ambient() {
     ); // create triangle with attributes
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(0), Vector(1));
+    Light light(camera.position, camera.forward, Vector(1.0f));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -110,7 +110,7 @@ void Render::specular() {
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
     Vector normal = triangle.normal();
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(1), Vector(1));
+    Light light(camera.position, camera.forward, Vector(1.0f));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -148,7 +148,7 @@ void Render::diffuse() {
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
     Vector normal = triangle.normal();
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(1), Vector(1));
+    Light light(camera.position, camera.forward, Vector(1.0f));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -158,7 +158,7 @@ void Render::diffuse() {
             if (r.intersects(triangle, point, alpha, beta, gamma)) {
                 RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
 
-                Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
+                Vector diffuse = light.computeDiffuse(triangle, normal, color, point);
 
                 color = diffuse.toRGB();
 
@@ -197,7 +197,7 @@ void Render::blinn_phong() {
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
     Vector normal = (triangle.B.position - triangle.A.position).cross((triangle.C.position - triangle.A.position)).normalize();
-    Light light(camera.position, camera.forward, Vector(1.0f), Vector(1), Vector(1));
+    Light light(camera.position, camera.forward, Vector(1.0f));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -213,7 +213,7 @@ void Render::blinn_phong() {
 
                 Vector specular = light.computeSpecular(triangle, normal, point, r.direction);
 
-                Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
+                Vector diffuse = light.computeDiffuse(triangle, normal, color, point);
 
                 color = (ambient + diffuse + specular).toRGB();
 
@@ -261,7 +261,7 @@ void Render::shadow() {
     );
 
     Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
-    Light light(Vector(0, 1, 0), Vector(0, -1, 1), Vector(0.4), Vector(1), Vector(1));
+    Light light(Vector(0, 1, 0), Vector(0, -1, 1), Vector(0.4));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
@@ -307,7 +307,7 @@ void Render::shadow() {
 
                     Vector specular = light.computeSpecular(triangle, normal, point, r.direction);
 
-                    Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
+                    Vector diffuse = light.computeDiffuse(triangle, normal, color, point);
 
                     color = (ambient + diffuse + specular).toRGB();
 
@@ -324,9 +324,8 @@ void Render::shadow() {
 
 
 void Render::cornell() {
-    Image image(128);
+    Image image(512);
     World world;
-    world.addPointLight(Light(Vector(0, 0.9, 0.5), Vector(0, -1, 0), Vector(0.3), Vector(0.5), Vector(1)));
 
    // BACK WALL
     world.addPlane(
@@ -393,78 +392,20 @@ void Render::cornell() {
             4
     );
 
-    world.addTriangle({
-            Vertex(Vector(-0.04688, -0.84375, 1), RGB(255, 0, 0), UV(0.160268, 0.290086)),
-            Vertex(Vector(0.5625, 0.5625, 1), RGB(0, 255, 0), UV(0.083611, 0.159907)),
-            Vertex(Vector(-0.60938, 0.40625, 1), RGB(0, 0, 255), UV(0.230169, 0.222781)),
-            Vector(1),
-            Vector(1.0f),
-            Vector(1.0f),
-            128}
-    ); // create triangle with attributes
-
-    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
+    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 512, 512, 90);
+    world.addPointLight(Light(Vector(0, 0.9, 1), Vector(0, -1, 0), Vector(1), Vector(0.4)));
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
             Ray r = camera.pixelToRay(Pixel(x, y));
 
 
-            RGB color = Color::correct(world.pathTrace(r, true)).toRGB();
+            long count = 0;
+            RGB color = Color::correct(world.pathTrace(r, true, count)).toRGB();
 
             image[x][y].r = clamp(color.r);
             image[x][y].g = clamp(color.g);
             image[x][y].b = clamp(color.b);
-
-//            float z_buffer = MAXFLOAT;
-//
-//            for (Triangle &triangle : world.triangles) {
-//                float distance = 0;
-//                float alpha = 0, beta = 0, gamma = 0;
-//                Vector point;
-//
-//                if (r.intersects(triangle, point, distance, alpha, beta, gamma)) {
-//                    if(distance >= z_buffer)
-//                        continue;
-//                    z_buffer = distance;
-//
-//                    // calculate shadow
-//                    Ray shadow_ray(light.position, point - light.position);
-//                    float shadow_z = MAXFLOAT;
-//                    for (Triangle &shadow_triangle : world.triangles) {
-//                        float shadow_distance;
-//                        if(shadow_ray.intersects(shadow_triangle, shadow_distance)) {
-//                            if(shadow_distance >= shadow_z)
-//                                continue;
-//                            shadow_z = shadow_distance;
-//                        }
-//                    }
-//                    float light_distance = MAXFLOAT;
-//                    shadow_ray.intersects(triangle, light_distance);
-//                    if(shadow_z <= light_distance - 0.001) {
-//                        image[x][y].r = 0;
-//                        image[x][y].g = 0;
-//                        image[x][y].b = 0;
-//                        continue;
-//                    }
-//
-//                    Vector normal = triangle.normal();
-//
-//                    RGB color = (triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma);
-//
-//                    Vector ambient = light.computeAmbient(triangle, color);
-//
-//                    Vector specular = light.computeSpecular(triangle, normal, point, r.direction);
-//
-//                    Vector diffuse = light.computeDiffuse(triangle, normal, color, point, r.direction);
-//
-//                    color = (Color::correct(ambient + diffuse + specular)/shadow_z).toRGB();
-//
-//                    image[x][y].r = clamp(color.r);
-//                    image[x][y].g = clamp(color.g);
-//                    image[x][y].b = clamp(color.b);
-//                }
-//            }
         }
     }
     image.toFile("cornell");

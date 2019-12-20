@@ -37,7 +37,7 @@ struct Ray {
         distance = t;
 
         // if point is behind camera
-        if(t < 0)
+        if(t < 0.0001)
             return false;
 
         point = origin + direction*t;

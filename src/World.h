@@ -7,6 +7,7 @@
 
 
 #include <vector>
+#include <random>
 #include "Light.h"
 #include "Ray.h"
 
@@ -16,6 +17,8 @@ public:
     std::vector<Light> pointLights;
     std::vector<Light> areaLights;
 
+    std::default_random_engine generator;
+    std::uniform_real_distribution<float> distribution{-1.0f,1.0f};
 
     void addTriangle(const Triangle &triangle) {
         triangles.emplace_back(triangle);
@@ -100,7 +103,7 @@ public:
             if(lineOfSight(surfel.location, light.position)) { // not in shadow
                 Vector omega_i = surfel.location - light.position;
                 float distance = omega_i.magnitude();
-                Vector E_I = light.colour / (4 * M_PI * distance * distance);
+                Vector E_I = light.color / (4 * M_PI * distance * distance);
 
                 output+= surfel.BSDF(omega_i, -ray.direction) * E_I * std::max(0.0f, omega_i.dot(surfel.normal));
             }
@@ -115,36 +118,47 @@ public:
 
         for(Light &light : areaLights) {
             if(lineOfSight(light.position, surfel.location)) { // not in shadow
-                Vector omega_i = light.position - surfel.location;
-                float distance = omega_i.magnitude();
-
-                Vector E_I = light.colour / (4 * M_PI * distance * distance);
-
-                output += surfel.BSDF(omega_i, -ray.direction) * E_I * std::max(0.0f, omega_i.dot(surfel.normal));
+                Vector color = surfel.color();
+                output += light.computeDiffuse(*surfel.triangle, surfel.normal, color, surfel.location);
             }
         }
 
         return output;
     }
 
-    Vector estimateImpulseScattering(Surfel &surfel, Ray &ray, bool is_eye_ray) {
-        Vector impulseDirection = surfel.getImpulseDirection(-ray.direction);
+    Vector estimateImpulseScattering(Surfel &surfel, Ray &ray, int depth) {
+        Vector vec = -ray.direction;
+        Vector impulseDirection = surfel.getImpulseDirection(vec);
         Ray secondaryRay(surfel.location, impulseDirection);
 
-        return pathTrace(secondaryRay, is_eye_ray);
+        depth++;
+        if(depth <= 4) {
+            Vector temp = pathTrace(secondaryRay, false, depth, true);
+            return temp * surfel.impulse.magnitude();
+        }
+        else
+            return {0};
     }
 
-    Vector estimateIndirectLight(Surfel &surfel, Ray &ray, bool is_eye_ray) {
-        if(random() > surfel.extinction_probability())
+    Vector estimateIndirectLight(Surfel &surfel, Ray &ray, int depth) {
+        int ran = random() % 100;
+        if(ran > surfel.extinction_probability()-1)
             return 0;
         else {
-            Vector bounceVector = surfel.normal;
-            Ray bounceRay(surfel.location, bounceVector);
-            return pathTrace(bounceRay, false);
+            float x = distribution(generator);
+            float y = distribution(generator);
+            float z = distribution(generator);
+            Vector r(x, y, z);
+
+            if(r.normalize().dot(surfel.normal) >= 0)
+                r = -r;
+
+            Ray bounceRay(surfel.location, r);
+            return pathTrace(bounceRay, false, depth);
         }
     }
 
-    Vector pathTrace(Ray &ray, bool is_eye_ray) {
+    Vector pathTrace(Ray &ray, bool is_eye_ray,  int depth, bool reflect = false) {
         Vector output(0);
         float distance = 0;
 
@@ -153,19 +167,26 @@ public:
             if(is_eye_ray && surfel.emits)
                 output += surfel.triangle->emission;
 
-            if(!is_eye_ray || surfel.reflects_direct) {
-                output += estimateDirectPointLight(surfel, ray);
-                output += estimateDirectAreaLight(surfel, ray);
-            } // direct illumination
+            output += estimateDirectPointLight(surfel, ray);
+            output += estimateDirectAreaLight(surfel, ray);
 
-            if(!is_eye_ray || surfel.scatterImpulse)
-                output += estimateImpulseScattering(surfel, ray, is_eye_ray);
 
-            bool m_indirect = false;
-            if(!is_eye_ray || m_indirect) {
-                output += estimateIndirectLight(surfel, ray, is_eye_ray);
+            if(!is_eye_ray && surfel.impulse.magnitude() > 0) // get reflection
+                output += estimateImpulseScattering(surfel, ray, depth);
+
+
+            if(is_eye_ray) {
+                int N = 16; // number of random directions
+                Vector indirectLightingApprox = 0;
+                for (int n = 0; n < N; ++n) {
+                    // cast a ray above P in random direction in hemisphere oriented around N, the surface normal at P
+                    indirectLightingApprox += estimateIndirectLight(surfel, ray, depth); // accumulate results
+                }
+                // divide by total number of directions taken
+                output += indirectLightingApprox / N;
             }
         }
+        depth++;
         return output;
     }
 };

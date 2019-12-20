@@ -5,6 +5,7 @@
 #ifndef ASSIGNMENT_3_TRIANGLE_H
 #define ASSIGNMENT_3_TRIANGLE_H
 
+#include <cstdlib>
 #include "Vertex.h"
 
 /*
@@ -49,26 +50,34 @@ struct Surfel {
     Vector location;
     float alpha, beta, gamma;
     Vector normal;
-    bool reflects_direct = true, scatterImpulse, emits;
+    Vector impulse{0};
+    bool reflects_direct, scatterImpulse = true, emits;
 
     Surfel(Triangle *triangle, const Vector &location, float alpha, float beta, float gamma) : triangle(triangle),
                                                                                                location(location),
                                                                                                alpha(alpha), beta(beta),
                                                                                                gamma(gamma) {
-        normal = triangle->normal();
+        if(triangle != nullptr) {
+            normal = triangle->normal();
+            impulse = triangle->specular;
+        }
     }
 
     Vector BSDF(Vector incident, Vector reflection) {
-        RGB color =  (triangle->A.color * alpha) + (triangle->B.color * beta) + (triangle->C.color * gamma);
-        return color;
+        return color();
     }
 
-    Vector getImpulseDirection(const Vector &ray) {
-        return {1};
+    Vector getImpulseDirection(Vector &ray) {
+        Vector r = (normal * (2 * (ray.dot(normal)))) - ray;
+        return r;
     }
 
     float extinction_probability() {
-        return 100;
+        return 1000;
+    }
+
+    Vector color() {
+        return {(triangle->A.color * alpha) + (triangle->B.color * beta) + (triangle->C.color * gamma)};
     }
 };
 

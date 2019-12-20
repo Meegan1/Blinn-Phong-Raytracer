@@ -11,29 +11,27 @@ class Light {
 public:
     Vector position;
     Vector direction;
-    Vector colour;
+    Vector color;
     Vector ambient, diffuse, specular;
 
-    Light(Vector position, Vector direction, Vector ambient,  Vector diffuse, Vector specular)
+    Light(Vector position, Vector direction, Vector ambient)
             : position(position), direction(direction.normalize()),
-              ambient(ambient), specular(specular),
-              diffuse(diffuse), colour(1) {}
+              ambient(ambient), color(1) {}
 
-    Light(Vector position, Vector direction, Vector colour, Vector ambient,  Vector diffuse, Vector specular) : position(position), direction(direction.normalize()),
-                                                                                                                ambient(ambient), specular(specular),
-                                                                                                                diffuse(diffuse), colour(colour) {}
+    Light(Vector position, Vector direction, Vector color, Vector ambient) : position(
+            position), direction(direction.normalize()), ambient(ambient), color(color) {}
 
 
     RGB computeAmbient(Triangle &surface, RGB &color) {
         return color * (this->ambient * surface.ambient);
     }
 
-    RGB computeDiffuse(Triangle &surface, Vector &normal, RGB &color, Vector &point, Vector &ray_direction) {
+    RGB computeDiffuse(Triangle &surface, Vector &normal, RGB &surface_color, Vector &point) {
         float diffuse_angle = std::fmax(normal.dot((point - this->position).normalize()), 0.0f);
         float distance = (this->position - point).magnitude();
-        float inverse_square = 1 / (4 * M_PI * distance * distance);
+        float inverse_square = 1 / (distance * distance);
 
-        return (color * (this->diffuse * surface.diffuse * diffuse_angle)) * inverse_square;
+        return (color * surface_color * (surface.diffuse * diffuse_angle)) * inverse_square;
     }
 
     RGB computeSpecular(Triangle &surface, Vector &normal, Vector &point, Vector &ray_direction) {
@@ -42,7 +40,7 @@ public:
         float distance = (this->position - point).magnitude();
         float inverse_square = 1 / (distance * distance);
 
-        return this->specular * surface.specular * pow(specular_angle, surface.specular_coefficient)*inverse_square;
+        return color * surface.specular * pow(specular_angle, surface.specular_coefficient)*inverse_square;
     }
 };
 
