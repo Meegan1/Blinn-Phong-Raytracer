@@ -90,10 +90,5 @@ struct Ray {
         float alpha, beta, gamma;
         return intersects(triangle, point, distance, alpha, beta, gamma);
     }
-
-//    static Vector pathTrace(Ray &ray, bool is_eye_ray) {
-//        Vector output(0);
-//        if(ray.intersects())
-//    }
 };
 #endif //ASSIGNMENT_3_RAY_H

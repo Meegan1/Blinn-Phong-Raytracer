@@ -11,12 +11,17 @@ class Light {
 public:
     Vector position;
     Vector direction;
+    Vector colour;
     Vector ambient, diffuse, specular;
 
     Light(Vector position, Vector direction, Vector ambient,  Vector diffuse, Vector specular)
             : position(position), direction(direction.normalize()),
               ambient(ambient), specular(specular),
-              diffuse(diffuse) {}
+              diffuse(diffuse), colour(1) {}
+
+    Light(Vector position, Vector direction, Vector colour, Vector ambient,  Vector diffuse, Vector specular) : position(position), direction(direction.normalize()),
+                                                                                                                ambient(ambient), specular(specular),
+                                                                                                                diffuse(diffuse), colour(colour) {}
 
 
     RGB computeAmbient(Triangle &surface, RGB &color) {
@@ -26,7 +31,7 @@ public:
     RGB computeDiffuse(Triangle &surface, Vector &normal, RGB &color, Vector &point, Vector &ray_direction) {
         float diffuse_angle = std::fmax(normal.dot((point - this->position).normalize()), 0.0f);
         float distance = (this->position - point).magnitude();
-        float inverse_square = 1 / (distance * distance);
+        float inverse_square = 1 / (4 * M_PI * distance * distance);
 
         return (color * (this->diffuse * surface.diffuse * diffuse_angle)) * inverse_square;
     }

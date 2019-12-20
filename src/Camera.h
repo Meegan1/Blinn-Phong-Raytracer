@@ -3,10 +3,10 @@
 //
 
 #include <cmath>
-#include "Ray.h"
 
 #ifndef ASSIGNMENT_3_CAMERA_H
 #define ASSIGNMENT_3_CAMERA_H
+#include "Ray.h"
 
 struct Pixel {
     float x, y;

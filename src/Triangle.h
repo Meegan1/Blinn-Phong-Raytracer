@@ -12,7 +12,7 @@
  */
 struct Triangle {
     Vertex A, B, C;
-    Vector ambient{}, specular{}, diffuse{};
+    Vector ambient{}, specular{}, diffuse{}, emission{};
     float specular_coefficient;
 
     Triangle(Vertex A, Vertex B, Vertex C) : A(A), B(B), C(C) {}
@@ -41,6 +41,34 @@ struct Triangle {
 
     Vector normal() {
         return (B.position - A.position).cross((C.position - A.position)).normalize();
+    }
+};
+
+struct Surfel {
+    Triangle *triangle;
+    Vector location;
+    float alpha, beta, gamma;
+    Vector normal;
+    bool reflects_direct = true, scatterImpulse, emits;
+
+    Surfel(Triangle *triangle, const Vector &location, float alpha, float beta, float gamma) : triangle(triangle),
+                                                                                               location(location),
+                                                                                               alpha(alpha), beta(beta),
+                                                                                               gamma(gamma) {
+        normal = triangle->normal();
+    }
+
+    Vector BSDF(Vector incident, Vector reflection) {
+        RGB color =  (triangle->A.color * alpha) + (triangle->B.color * beta) + (triangle->C.color * gamma);
+        return color;
+    }
+
+    Vector getImpulseDirection(const Vector &ray) {
+        return {1};
+    }
+
+    float extinction_probability() {
+        return 100;
     }
 };
 

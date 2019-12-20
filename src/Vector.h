@@ -50,6 +50,24 @@ struct Vector {
         return {x/num, y/num, z/num};
     }
 
+    Vector & operator += (const Vector & other) {
+        this->x += other.x;
+        this->y += other.y;
+        this->z += other.z;
+        return *this;
+    }
+
+    Vector & operator += (const float & num) {
+        this->x += num;
+        this->y += num;
+        this->z += num;
+        return *this;
+    }
+
+    Vector operator - () {
+        return {-x, -y, -z};
+    }
+
     float magnitude() {
         return sqrt((x * x) + (y * y) + (z * z));
     }
