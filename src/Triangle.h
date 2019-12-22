@@ -45,39 +45,50 @@ struct Triangle {
     }
 };
 
+
+/*
+ * Surfel struct for recursive raytracer
+ */
 struct Surfel {
-    Triangle *triangle;
     Vector location;
-    float alpha, beta, gamma;
+    float alpha{}, beta{}, gamma{};
     Vector normal;
     Vector impulse{0};
-    bool reflects_direct, scatterImpulse = true, emits;
+    float roughness{1};
+    Vector emission{};
+    bool emits{false};
+    Vector color;
 
-    Surfel(Triangle *triangle, const Vector &location, float alpha, float beta, float gamma) : triangle(triangle),
-                                                                                               location(location),
+    Surfel() = default;
+
+    Surfel(Triangle &triangle, const Vector &location, float alpha, float beta, float gamma) : location(location),
                                                                                                alpha(alpha), beta(beta),
                                                                                                gamma(gamma) {
-        if(triangle != nullptr) {
-            normal = triangle->normal();
-            impulse = triangle->specular;
-        }
+            normal = triangle.normal();
+            impulse = triangle.specular;
+            color = {(triangle.A.color * alpha) + (triangle.B.color * beta) + (triangle.C.color * gamma)};
+            emission = triangle.emission;
     }
 
-    Vector BSDF(Vector incident, Vector reflection) {
-        return color();
+    Surfel(Vector &location, Vector &light_color, Vector &normal) : location(location){
+            normal = normal;
+            color = light_color;
+            emission = 1;
+            emits = true;
+    }
+
+    Vector BSDF(Vector incoming, Vector outgoing) {
+        return color;
     }
 
     Vector getImpulseDirection(Vector &ray) {
-        Vector r = (normal * (2 * (ray.dot(normal)))) - ray;
+        Vector n = normal.dot(ray) < 0 ? normal : normal * -1; // get normal from side visible to ray
+        Vector r = ray - (n * (2 * (ray.dot(n))));
         return r;
     }
 
     float extinction_probability() {
-        return 1000;
-    }
-
-    Vector color() {
-        return {(triangle->A.color * alpha) + (triangle->B.color * beta) + (triangle->C.color * gamma)};
+        return 0.4;
     }
 };
 

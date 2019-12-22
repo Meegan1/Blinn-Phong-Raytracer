@@ -324,7 +324,7 @@ void Render::shadow() {
 
 
 void Render::cornell() {
-    Image image(512);
+    Image image(128);
     World world;
 
    // BACK WALL
@@ -392,16 +392,36 @@ void Render::cornell() {
             4
     );
 
-    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 512, 512, 90);
-    world.addPointLight(Light(Vector(0, 0.9, 1), Vector(0, -1, 0), Vector(1), Vector(0.4)));
+    Camera camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 128, 128, 90);
+    world.addAreaLight(AreaLight(
+            Vector(1),
+            Vector(0.5, 0.99, 1.75),
+            Vector(0.5, 0.99, 1.25),
+            Vector(-0.5, 0.99, 1.75),
+            1
+                       )
+    );
+    world.addAreaLight(AreaLight(
+            Vector(1),
+            Vector(0.5, 0.99, 1.25),
+            Vector(-0.5, 0.99, 1.75),
+            Vector(-0.5, 0.99, 1.25),
+                    1
+                    )
+    );
+
 
     for (int y = image.get_height() - 1; y != -1; y--) {
         for (int x = 0; x < image.get_width(); x++) {
             Ray r = camera.pixelToRay(Pixel(x, y));
 
-
-            long count = 0;
-            RGB color = Color::correct(world.pathTrace(r, true, count)).toRGB();
+            int N = 16; // number of samplings
+            Vector color;
+            for (int n = 0; n < N; ++n) {
+                color += world.pathTrace(r, true);
+            }
+            color = color / N;
+            color = Color::correct(color).toRGB();
 
             image[x][y].r = clamp(color.r);
             image[x][y].g = clamp(color.g);

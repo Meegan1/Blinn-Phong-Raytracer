@@ -5,6 +5,7 @@
 #ifndef ASSIGNMENT_4_WORLD_H
 #define ASSIGNMENT_4_WORLD_H
 
+#define PDF (1 / (2 * M_PI))
 
 #include <vector>
 #include <random>
@@ -15,10 +16,11 @@ class World {
 public:
     std::vector<Triangle> triangles;
     std::vector<Light> pointLights;
-    std::vector<Light> areaLights;
+    std::vector<AreaLight> areaLights;
 
     std::default_random_engine generator;
-    std::uniform_real_distribution<float> distribution{-1.0f,1.0f};
+    std::uniform_real_distribution<float> distribution{0,1.0f};
+    std::uniform_real_distribution<float> extinction{0, 1.0f};
 
     void addTriangle(const Triangle &triangle) {
         triangles.emplace_back(triangle);
@@ -52,11 +54,11 @@ public:
         pointLights.emplace_back(light);
     }
 
-    void addAreaLight(const Light &light) {
+    void addAreaLight(const AreaLight &light) {
         areaLights.emplace_back(light);
     }
 
-    Surfel intersects(Ray &ray, float &dist) {
+    bool intersects(Ray &ray, float &dist, Surfel &surfel) {// checks for intersection
         float z_buffer = MAXFLOAT;
         Triangle *triangle = nullptr;
         Vector point;
@@ -76,10 +78,48 @@ public:
                 gamma = g;
             }
         }
-        return {triangle, point, alpha, beta, gamma};
+        dist = z_buffer;
+
+        Vector l_point;
+        AreaLight *areaLight = nullptr;
+        Vector l_color;
+        Vector l_normal;
+        for(AreaLight light : areaLights) {
+            Triangle temp(
+                    Vertex(light.v0, RGB(0), UV(0, 0)),
+                    Vertex(light.v1, RGB(0), UV(0, 0)),
+                    Vertex(light.v2, RGB(0), UV(0, 0))
+            );
+            float distance = 0;
+            Vector p;
+            float a = 0, b = 0, g = 0;
+            if (ray.intersects(temp, p, distance, a, b, g)) {
+                if (distance >= z_buffer)
+                    continue;
+                z_buffer = distance;
+                l_point = p;
+                areaLight = &light;
+                l_color = light.color;
+                l_normal = light.normal;
+            }
+        }
+
+        if(dist >= z_buffer) {
+            dist = z_buffer;
+            if(areaLight != nullptr) {
+                surfel = {l_point, l_color, l_normal};
+                return true;
+            }
+        }
+
+        if(triangle == nullptr)
+            return false;
+
+        surfel = {*triangle, point, alpha, beta, gamma};
+        return true;
     }
 
-    bool lineOfSight(Vector &point_a, Vector &point_b) {
+    bool lineOfSight(Vector &point_a, Vector &point_b) { // check if point is occluded by another object
         Vector direction =  point_a - point_b;
         Ray ray(point_b, direction);
         float z_buffer = direction.magnitude();
@@ -98,14 +138,15 @@ public:
 
     Vector estimateDirectPointLight(Surfel &surfel, Ray &ray) {
         Vector output(0);
+        Vector normal = surfel.normal.dot(ray.direction) < 0 ? surfel.normal : surfel.normal * -1; // get normal from side visible to ray
 
         for(Light &light : pointLights) {
             if(lineOfSight(surfel.location, light.position)) { // not in shadow
-                Vector omega_i = surfel.location - light.position;
+                Vector omega_i = light.position - surfel.location;
                 float distance = omega_i.magnitude();
                 Vector E_I = light.color / (4 * M_PI * distance * distance);
 
-                output+= surfel.BSDF(omega_i, -ray.direction) * E_I * std::max(0.0f, omega_i.dot(surfel.normal));
+                output+= surfel.BSDF(omega_i, -ray.direction) * E_I * std::max(0.0f, omega_i.normalize().dot(normal));
             }
         }
 
@@ -113,81 +154,87 @@ public:
     }
 
 
-    Vector estimateDirectAreaLight(Surfel &surfel, Ray &ray) { // todo finish arealight
+    Vector estimateDirectAreaLight(Surfel &surfel, Ray &ray) {
         Vector output(0);
+        Vector normal = surfel.normal.dot(ray.direction) < 0 ? surfel.normal : surfel.normal * -1; // get normal from side visible to ray
 
-        for(Light &light : areaLights) {
-            if(lineOfSight(light.position, surfel.location)) { // not in shadow
-                Vector color = surfel.color();
-                output += light.computeDiffuse(*surfel.triangle, surfel.normal, color, surfel.location);
+        for(AreaLight &light : areaLights) {
+            Vector result;
+            for(Vector &point : light.samplePoints()) {
+                if (lineOfSight(point, surfel.location)) { // not in shadow
+                    Vector omega_i = point - surfel.location;
+                    float cosa = std::max(0.0f, omega_i.normalize().dot(normal));
+                    float cosb = fmax((-omega_i.normalize()).dot(light.normal), 0.0f);
+                    float distance = fmax(omega_i.magnitude(), 1.0f);
+                    float E_I =  light.intensity / ( distance * distance);
+
+                    result+= surfel.BSDF(omega_i, -ray.direction) * E_I * cosa * cosb;
+                }
             }
+            output += result * light.area * light.color / SAMPLE_COUNT;
         }
 
         return output;
     }
 
-    Vector estimateImpulseScattering(Surfel &surfel, Ray &ray, int depth) {
-        Vector vec = -ray.direction;
-        Vector impulseDirection = surfel.getImpulseDirection(vec);
+    Vector estimateImpulseScattering(Surfel &surfel, Ray &ray) {
+        if(extinction(generator) <= surfel.extinction_probability())
+            return 0;
+
+        Vector impulseDirection = surfel.getImpulseDirection(ray.direction);
         Ray secondaryRay(surfel.location, impulseDirection);
 
-        depth++;
-        if(depth <= 4) {
-            Vector temp = pathTrace(secondaryRay, false, depth, true);
-            return temp * surfel.impulse.magnitude();
-        }
-        else
-            return {0};
+        Vector temp = pathTrace(secondaryRay, false);
+        return temp * surfel.impulse.magnitude(); // get reflection
     }
 
-    Vector estimateIndirectLight(Surfel &surfel, Ray &ray, int depth) {
-        int ran = random() % 100;
-        if(ran > surfel.extinction_probability()-1)
+    Vector estimateIndirectLight(Surfel &surfel, Ray &ray) {
+        if(extinction(generator) > surfel.extinction_probability())
             return 0;
-        else {
-            float x = distribution(generator);
-            float y = distribution(generator);
-            float z = distribution(generator);
-            Vector r(x, y, z);
 
-            if(r.normalize().dot(surfel.normal) >= 0)
-                r = -r;
+        Vector indirectLightingApprox = 0;
+        // create random vector for indirect lighting
+        float r1 = distribution(generator);
+        float r2 = distribution(generator);
+        Vector sample = Vector::sampleHemisphere(r1, r2);
 
-            Ray bounceRay(surfel.location, r);
-            return pathTrace(bounceRay, false, depth);
-        }
+        Vector normal = surfel.normal.dot(ray.direction) < 0 ? surfel.normal : surfel.normal * -1; // get normal from side visible to ray
+
+        Vector right, up;
+        Vector::createCoordinateSystem(normal, right, up);
+
+        Vector r(
+                sample.x * right.x + sample.y * normal.x + sample.z * up.x,
+                sample.x * right.y + sample.y * normal.y + sample.z * up.y,
+                sample.x * right.z + sample.y * normal.z + sample.z * up.z
+        );
+
+        Ray bounceRay(surfel.location, r);
+
+        indirectLightingApprox += pathTrace(bounceRay, false); // get indirect lighting
+        return indirectLightingApprox;
     }
 
-    Vector pathTrace(Ray &ray, bool is_eye_ray,  int depth, bool reflect = false) {
+    Vector pathTrace(Ray &ray, bool is_eye_ray) {
         Vector output(0);
         float distance = 0;
 
-        Surfel surfel = intersects(ray, distance);
-        if(surfel.triangle) {
-            if(is_eye_ray && surfel.emits)
-                output += surfel.triangle->emission;
+        Surfel surfel;
+        if(intersects(ray, distance, surfel)) { // intersects
+            if (is_eye_ray && surfel.emits)
+                output += surfel.emission; // add emission
 
-            output += estimateDirectPointLight(surfel, ray);
-            output += estimateDirectAreaLight(surfel, ray);
+            output += estimateDirectPointLight(surfel, ray); // get direct point lights
+//            if(!is_eye_ray)
+            output += estimateDirectAreaLight(surfel, ray); // get direct area light
 
+            if (surfel.impulse.magnitude() > 0) // get reflection
+                output += estimateImpulseScattering(surfel, ray);
 
-            if(!is_eye_ray && surfel.impulse.magnitude() > 0) // get reflection
-                output += estimateImpulseScattering(surfel, ray, depth);
-
-
-            if(is_eye_ray) {
-                int N = 16; // number of random directions
-                Vector indirectLightingApprox = 0;
-                for (int n = 0; n < N; ++n) {
-                    // cast a ray above P in random direction in hemisphere oriented around N, the surface normal at P
-                    indirectLightingApprox += estimateIndirectLight(surfel, ray, depth); // accumulate results
-                }
-                // divide by total number of directions taken
-                output += indirectLightingApprox / N;
-            }
+            // get indirect lighting
+            output += estimateIndirectLight(surfel, ray);
         }
-        depth++;
-        return output;
+        return output; // return final colour
     }
 };
 

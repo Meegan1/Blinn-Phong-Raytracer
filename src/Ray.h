@@ -37,11 +37,12 @@ struct Ray {
         distance = t;
 
         // if point is behind camera
-        if(t < 0.0001)
+        if(t <= 0.0001)
             return false;
 
-        point = origin + direction*t;
+        point = origin + direction*t; // calculate intersection point
 
+        // calculate co-ordinates on plane
         Vector s = point - p;
         Vector sp(s.dot(u), s.dot(w), s.dot(n));
 
@@ -53,6 +54,7 @@ struct Ray {
         Vector qsp(qs.dot(u), qs.dot(w), qs.dot(n));
         Vector rsp(rs.dot(u), rs.dot(w), rs.dot(n));
 
+        // create triangle for barycentric interpolation
         Triangle triangle1(
                 Vertex(psp, RGB(0, 0, 0), UV(0, 0)),
                 Vertex(qsp, RGB(0, 0, 0), UV(0, 0)),
@@ -61,6 +63,7 @@ struct Ray {
 
         triangle1.get_barycentric(sp, alpha, beta, gamma);
 
+        // return false if not inside triangle
         return !(alpha < -EPSILON || beta < -EPSILON || gamma < -EPSILON );
     }
 

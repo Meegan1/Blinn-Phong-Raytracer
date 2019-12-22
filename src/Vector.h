@@ -95,6 +95,21 @@ struct Vector {
     Vector RGBToVector() {
         return {x / 255, y / 255, z / 255};
     }
+
+    static void createCoordinateSystem(Vector normal, Vector &right, Vector &up) {
+        if(abs(normal.x) > abs(normal.y))
+            right = Vector(normal.z, 0, normal.x).normalize();
+        else
+            right = Vector(0, -normal.z, normal.y);
+
+        up = normal.cross(right);
+    }
+
+    static Vector sampleHemisphere(const float &u, const float &v) {
+        float x = cosf(2 * M_PI * u);
+        float z = sinf(2 * M_PI * v);
+        return {x, v, z};
+    }
 };
 
 #endif //ASSIGNMENT_3_VECTOR_H
